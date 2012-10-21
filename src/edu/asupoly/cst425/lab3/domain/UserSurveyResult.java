@@ -39,7 +39,13 @@ public final class UserSurveyResult {
     }
 
     public int getAnswerForSurveyItem(SurveyItem surveyItem) {
-        return answers.get(surveyItem);
+        int answer = -1;
+
+        if(answers.containsKey(surveyItem)) {
+            answer = answers.get(surveyItem);
+        }
+
+        return answer;
     }
 
     public void clear() {

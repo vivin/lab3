@@ -18,6 +18,10 @@ public final class SurveyResults {
         completedUserSurveyResults = new ConcurrentHashMap<User, UserSurveyResult>();
     }
 
+    public Survey getSurvey() {
+        return survey;
+    }
+
     public void addUserSurveyResult(UserSurveyResult userSurveyResult) {
         userSurveyResults.put(userSurveyResult.getUser(), userSurveyResult);
     }
@@ -82,7 +86,7 @@ public final class SurveyResults {
                 if(userToScore != user) {
 
                     UserSurveyResult userToScoreUserSurveyResult = completedUserSurveyResults.get(userToScore);
-                    User scoredUser = new User(userToScore.getFirstName(), userToScore.getLastName());
+                    User scoredUser = new User(userToScore.getName());
                     int matchingAnswers = 0;
 
                     for(int i = 0; i < survey.getNumPages(); i++) {
