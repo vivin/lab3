@@ -3,10 +3,6 @@ package edu.asupoly.cst425.lab3.domain;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public final class SurveyResults {
 
@@ -77,25 +73,21 @@ public final class SurveyResults {
 
         Set<User> scoredUsers = new TreeSet<User>();
 
-        List<SurveyItem> surveyItems = new ArrayList<SurveyItem>();
-        for(int i = 0; i < survey.getNumPages(); i++) {
-            surveyItems.add(survey.getSurveyItem(i));
-        }
-
         synchronized (completedUserSurveyResults) {
 
             Set<User> users = completedUserSurveyResults.keySet();
             UserSurveyResult mainUserSurveyResult = completedUserSurveyResults.get(user);
 
             for(User userToScore : users) {
-
                 if(userToScore != user) {
 
                     UserSurveyResult userToScoreUserSurveyResult = completedUserSurveyResults.get(userToScore);
                     User scoredUser = new User(userToScore.getFirstName(), userToScore.getLastName());
                     int matchingAnswers = 0;
 
-                    for(SurveyItem surveyItem : surveyItems) {
+                    for(int i = 0; i < survey.getNumPages(); i++) {
+                        SurveyItem surveyItem = survey.getSurveyItem(i);
+
                         if(mainUserSurveyResult.getAnswerForSurveyItem(surveyItem) == userToScoreUserSurveyResult.getAnswerForSurveyItem(surveyItem)) {
                             matchingAnswers++;
                         }
