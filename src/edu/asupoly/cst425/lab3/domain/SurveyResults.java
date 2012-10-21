@@ -83,18 +83,19 @@ public final class SurveyResults {
         }
 
         synchronized (completedUserSurveyResults) {
+
             Set<User> users = completedUserSurveyResults.keySet();
+            UserSurveyResult mainUserSurveyResult = completedUserSurveyResults.get(user);
 
             for(User userToScore : users) {
 
                 if(userToScore != user) {
+
+                    UserSurveyResult userToScoreUserSurveyResult = completedUserSurveyResults.get(userToScore);
                     User scoredUser = new User(userToScore.getFirstName(), userToScore.getLastName());
                     int matchingAnswers = 0;
 
                     for(SurveyItem surveyItem : surveyItems) {
-                        UserSurveyResult mainUserSurveyResult = userSurveyResults.get(user);
-                        UserSurveyResult userToScoreUserSurveyResult = userSurveyResults.get(userToScore);
-
                         if(mainUserSurveyResult.getAnswerForSurveyItem(surveyItem) == userToScoreUserSurveyResult.getAnswerForSurveyItem(surveyItem)) {
                             matchingAnswers++;
                         }
