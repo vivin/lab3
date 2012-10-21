@@ -4,21 +4,25 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public final class SurveyResults {
 
     private transient Map<User, UserSurveyResult> userSurveyResults;
     private volatile Map<User, UserSurveyResult> completedUserSurveyResults;
-    private Lock fileLock;
-    private Survey survey;
+    private final Survey survey;
+    private final String fileName;
 
-    public SurveyResults(Survey survey) {
+    public SurveyResults(Survey survey, String fileName) {
         this.survey = survey;
+        this.fileName = fileName;
         userSurveyResults = new ConcurrentHashMap<User, UserSurveyResult>();
         completedUserSurveyResults = new ConcurrentHashMap<User, UserSurveyResult>();
     }
 
-    public void recordUserSurveyResult(UserSurveyResult userSurveyResult) {
+    public void addUserSurveyResult(UserSurveyResult userSurveyResult) {
         userSurveyResults.put(userSurveyResult.getUser(), userSurveyResult);
     }
 
@@ -34,38 +38,35 @@ public final class SurveyResults {
         completedUserSurveyResults.put(user, userSurveyResults.get(user));
     }
 
-    public void save(String filename) throws IOException {
-        fileLock.lock();
+    public void save() throws IOException {
+        synchronized (fileName) {
+            File file = new File(fileName);
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
 
-        File file = new File(filename);
-        FileOutputStream fileOutputStream = new FileOutputStream(file);
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            synchronized (completedUserSurveyResults) {
+                objectOutputStream.writeObject(completedUserSurveyResults);
+            }
 
-        synchronized (completedUserSurveyResults) {
-            objectOutputStream.writeObject(completedUserSurveyResults);
+            objectOutputStream.close();
         }
 
-        objectOutputStream.close();
-
-        fileLock.unlock();
     }
 
-    public void restore(String filename) throws IOException, ClassNotFoundException {
-        fileLock.lock();
+    public void restore() throws IOException, ClassNotFoundException {
+        synchronized (fileName) {
+            File file = new File(fileName);
+            FileInputStream fileInputStream = new FileInputStream(file);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
-        File file = new File(filename);
-        FileInputStream fileInputStream = new FileInputStream(file);
-        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            userSurveyResults = new ConcurrentHashMap<User, UserSurveyResult>();
 
-        userSurveyResults = new ConcurrentHashMap<User, UserSurveyResult>();
+            synchronized (completedUserSurveyResults) {
+                completedUserSurveyResults = (ConcurrentHashMap<User, UserSurveyResult>) objectInputStream.readObject();
+            }
 
-        synchronized (completedUserSurveyResults) {
-            completedUserSurveyResults = (ConcurrentHashMap<User, UserSurveyResult>) objectInputStream.readObject();
+            objectInputStream.close();
         }
-
-        objectInputStream.close();
-
-        fileLock.unlock();
     }
 
     public Map<User, UserSurveyResult> getCompletedUserSurveyResults() {
