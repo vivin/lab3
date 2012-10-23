@@ -2,21 +2,17 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>CST425 Lab 3 Given Landing Page</title>
+<title>e425Match.com: Find your next CST425 lab partner online!</title>
 </head>
 <body>
-<p>
-This page will have to change to incorporate some of the session logic specified in your lab assignment.
-</p>
-<p>
-<!-- You will need to incorporate some new logic here:
- 	- You need to detect whether a user has been to this site before, and therefore you know her/his session
- 	- You need to let the user select whether to take the survey or check for matches. My sample code always
- 	  goes straight to taking the survey.
- -->
+<div id ="Top" style="text-align: center">
+		<hr />
+		<h1>e425Match.com</h1>		
+		<hr /><br /><br />	
+</div>
 <form action="survey" method="POST">
-	Name: <input type="text" name="username" size="20" value=""/>
-	<input type="submit" value="Submit"/>
+	<input type="hidden" name="start" value="start"/>
+	<input type="submit" name="submit" value="Start Now!" title="Sign in to view your matches now!" />	
 </form>
 </p>
 </body>

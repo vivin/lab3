@@ -1,6 +1,4 @@
-/**
- * 
- */
+
 package edu.asupoly.cst425.lab3.domain;
 
 import java.io.InputStream;
@@ -9,27 +7,18 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import javax.servlet.ServletContext;
+
 /**
  * @author kgary
- *
+ * modified: Paul Spaude Oct. 2012
  */
 public final class Survey {
 	private SurveyItem[] surveyItems;
-	
-	/**
-	 * This is a default constructor that should be removed, it is only used
-	 * to hardcode an initial Survey for testing purposes!  XXX
-	 * @throws IOException
-	 */
-	public Survey() throws IOException {
-		String question  = "What is the answer to everything?";
-		String[] choices = { "3", "42", "99" };
-		surveyItems = new SurveyItem[1];
-		surveyItems[0] = new SurveyItem(question, choices);
-	}
-	
-	public Survey(String filename) throws IOException {
-		InputStream is = this.getClass().getClassLoader().getResourceAsStream(filename);
+		
+	public Survey(String filename, ServletContext context) throws IOException 
+	{
+		InputStream is = context.getResourceAsStream(filename);
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		ArrayList<String> cs = new ArrayList<String>();
 		ArrayList<SurveyItem> sis = new ArrayList<SurveyItem>();
@@ -50,7 +39,7 @@ public final class Survey {
 		}
 		br.close();
 		surveyItems = sis.toArray(new SurveyItem[sis.size()]);
-	}
+	} //end constructor
 
 	public SurveyItem getSurveyItem(int num) {
 		if (num < 1 || num > surveyItems.length) {

@@ -1,16 +1,16 @@
 <!--
-   Lab3 build.xml file for CST425 Fall 2012.
-   Copyright 2012 Kevin A. Gary
+Lab3 build.xml file for CST425 Fall 2012.
+Copyright 2012 Kevin A. Gary
 
-   This build.xml is specific to the Lab2Given sample. You may 
-   have to modify a little bit after constructing your solution.
+This build.xml is specific to the Lab2Given sample. You may
+have to modify a little bit after constructing your solution.
 -->
 
 <project name="Lab3Given" default="compile" basedir=".">
   <property file="build.properties"/>
 
   <!-- init target makes the directory structure. You may not
-       require this if you set your environment up by hand. -->
+require this if you set your environment up by hand. -->
   <target name="init">
     <tstamp/>
     <mkdir dir="${classes.dir}"/>
@@ -18,7 +18,7 @@
 
   <!-- Compiles your java files and puts the classes in classes.dir -->
   <target name="compile" depends="init">
-    <javac debug="true"			
+    <javac debug="true"	
       srcdir="${src.dir}"
       destdir="${classes.dir}">
       <!-- Make sure you set your classpath! -->
@@ -30,12 +30,12 @@
   </target>
 
   <!-- The deploy target will be highly dependent on your deployed app.
-       For example, if you are building a web-app, you should include
-       commands to copy files over to your deploy directory according
-       to the servlet specification, or create a .war file (via dist)
-       and copy it over. If you are creating a standalone app (like this
-       example does), you can create it in a given directory, or create
-       your dist jar first that can be run using java -jar. -->
+For example, if you are building a web-app, you should include
+commands to copy files over to your deploy directory according
+to the servlet specification, or create a .war file (via dist)
+and copy it over. If you are creating a standalone app (like this
+example does), you can create it in a given directory, or create
+your dist jar first that can be run using java -jar. -->
   <target name="deploy" depends="dist">
     <copy file="${dist.jar}" todir="${tomcat.home}/webapps" overwrite="yes"/>
   </target>
@@ -62,7 +62,7 @@
   </target>
 
   <!-- submit creates a single jarfile that you will upload to the
-       Gradebook channel on the class portal. -->
+Gradebook channel on the class portal. -->
   <target name="submit" depends="dist">
     <jar destfile="${submit.jar}" basedir="." includes="build.properties,build.xml,web.xml,${dist.jar}${src.dir}/**,${resources.dir}/**,${classes.dir}/**">
      </jar>
@@ -79,10 +79,8 @@
 
   <!-- Clean all -->
   <target name="cleanall" depends="clean">
-	<delete dir="${classes.dir}"/>
+<delete dir="${classes.dir}"/>
     <delete file="${submit.jar}"/>
   </target>
 
 </project>
-  
-

@@ -50,6 +50,7 @@ public final class SurveyResults {
 
             objectOutputStream.close();
         }
+        System.out.println("\n\n***FINISHED SAVE!!!***\n\n");
 
     }
 
@@ -57,8 +58,8 @@ public final class SurveyResults {
         synchronized (fileName) {
             File file = new File(fileName);
             FileInputStream fileInputStream = new FileInputStream(file);
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-
+	    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+	    // DataInputStream objectInputStream = new DataInputStream(fileInputStream);
             userSurveyResults = new ConcurrentHashMap<User, UserSurveyResult>();
 
             synchronized (completedUserSurveyResults) {

@@ -1,7 +1,7 @@
 package edu.asupoly.cst425.lab3.domain;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,19 +12,39 @@ import java.util.concurrent.ConcurrentHashMap;
  * Time: 2:44 PM
  * To change this template use File | Settings | File Templates.
  */
-public final class UserSurveyResult {
+public final class UserSurveyResult implements Serializable {
 
-    private User user;
+    private final User user;
+    private transient final String id;
+    private transient int pageNumber;
     private Map<SurveyItem, Integer> answers;
+        
 
-    public UserSurveyResult(User user) {
+    public UserSurveyResult(String id, User user, int beginPageNmbr) 
+    {
+    	this.id = id;
         this.user = user;
+        this.setPageNumber(beginPageNmbr);
         answers = new ConcurrentHashMap<SurveyItem, Integer>(new LinkedHashMap<SurveyItem, Integer>());
     }
+    
+    public String getId() {
+		return id;
+	}
 
     public User getUser() {
         return user;
-    }
+    }	
+
+	public synchronized int getPageNumber() {
+		return pageNumber;
+	}
+
+	public synchronized void setPageNumber(int pageNumber) {
+		this.pageNumber = pageNumber;
+	}
+    
+    
 
     public void setAnswerForSurveyItem(SurveyItem surveyItem, int answer) {
         if(answer < 0) {

@@ -1,6 +1,8 @@
 package edu.asupoly.cst425.lab3.domain;
 
-public final class User implements Comparable<User> {
+import java.io.Serializable;
+
+public final class User implements Comparable<User>, Serializable {
     private String name;
     private int matchingAnswers;
 
