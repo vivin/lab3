@@ -88,7 +88,7 @@ public class RenderingService {
         }
 
         String buttonText = NEXT;
-        if(currentQuestion == (survey.getNumPages() - 1)) {
+        if(currentQuestion == (survey.getNumPages())) {
             buttonText = FINISH;
         }
 

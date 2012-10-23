@@ -3,19 +3,19 @@ package edu.asupoly.cst425.lab3.servlet;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
-
+import java.io.*;
+import java.util.logging.Logger;
 import edu.asupoly.cst425.lab3.domain.ConversationState;
 import edu.asupoly.cst425.lab3.domain.RenderingConfiguration;
-import edu.asupoly.cst425.lab3.domain.RenderingConfiguration.RenderingConfigurationBuilder;
 import edu.asupoly.cst425.lab3.domain.Survey;
-import edu.asupoly.cst425.lab3.domain.SurveyItem;
 import edu.asupoly.cst425.lab3.domain.SurveyResults;
 import edu.asupoly.cst425.lab3.domain.User;
 import edu.asupoly.cst425.lab3.domain.UserSurveyResult;
 import edu.asupoly.cst425.lab3.service.RenderingService;
 
-import java.io.*;
-import java.util.logging.Logger;
+
+import java.util.Enumeration;
+
 
 
 @SuppressWarnings("serial")
@@ -120,26 +120,26 @@ public class SurveyServlet extends HttpServlet
 			
 			if (username == null || username.isEmpty()) 
 			{	
-				System.out.println("\n\n***NULL AND EMPTY***\n\n");
+				System.out.println("NULL AND EMPTY");
 				if (username == null && req.getParameter("start").equals("start"))
 				{
 					response.append(RenderingService.renderLogin(rc));			//display login 
-					System.out.println("\n\n***START***\n\n");
+					System.out.println("START");
 					if (req.getParameter("submit").equals("Start Now!"))
 					{
-						System.out.println("\n\n***START NOW SELECTED***\n\n");
+						System.out.println("\n***START NOW SELECTED***\n");
 					}
 				}
 				else
 				{
 					response.append(RenderingService.renderLoginError(rc, 
 							"Name cannot be blank! Please enter your first name followed by your last name.")); //prompt until valid userName
-					System.out.println("\n\n***BLANK LOGIN***\n\n");
+					System.out.println("BLANK LOGIN");
 				}
 			}
 			else
 			{
-				System.out.println("\n\n***Checking USER***\n\n");
+				System.out.println("Checking USER");
 				HttpSession newSession = req.getSession(true);		//create new session if not found
 				User newUser = new User(username);				
 				UserSurveyResult userResults = results.getUserSurveyResultForUser(newUser);  //get results if user previously took survey (but session has expired) 
@@ -149,7 +149,7 @@ public class SurveyServlet extends HttpServlet
 				
 				if (userResults == null)
 				{
-					System.out.println("\n\n***NEW USER***\n\n");
+					System.out.println("NEW USER");
 					userResults = new UserSurveyResult(newUser);
 					results.addUserSurveyResult(userResults);
 					setStartPageNmbr = 0;	//start at beginning of the survey									
@@ -157,7 +157,7 @@ public class SurveyServlet extends HttpServlet
 				}		
 				else
 				{
-					System.out.println("\n\n***RETURNING USER***\n\n");
+					System.out.println("RETURNING USER");
 					//display HTML for home screen as is a returning user					
 					response.append(RenderingService.renderUserHome(rc, false));					
 				}
@@ -168,9 +168,9 @@ public class SurveyServlet extends HttpServlet
 		}
 		else
 		{
-			//TODO Move these to conts up top
+			//TODO Move these to consts up top
 			final String PREFS = "User Preferences";					//these are "cmds" that are used in SurveySurvlet and also the user sees these as buttons
-			final String QUIT = "Cancel Answers and Logout";			//TODO change this to save answers and go home?
+			final String QUIT = "Cancel Answers and Logout";			
 			final String NEXT = "Next Question";
 			final String FINISH = "Finish Survey";
 			final String QUITPREFS = "Save Preferences and Return";
@@ -179,42 +179,41 @@ public class SurveyServlet extends HttpServlet
 			final String MATCHES = "See your matches";
 			final String HOMERETN = "Return to UserHome";
 			final String LOGINRETN = "Return to LogIn";
-			final String LOGIN = "Login to e425Match";			  //not a cmd
 			
 			
-			System.out.println("\n\n***CONTINUING CONVERSATION USER***\n\n");
+			
+			System.out.println("CONTINUING CONVERSATION USER");
 			ConversationState stateCont = (ConversationState) sessionCont.getAttribute(sessionCont.getId()); //TODO Check for cookie here for PREFERENCES
-					
+			
+						
+			
+			
 			String submit = req.getParameter("submit");
 			
 			if (submit == null || stateCont == null )  //TODO take submit off of here when ready 
 			{
 				response.append(RenderingService.renderErrorScreen(req.getRequestURI(), "Submit or stateCont was null", false));
 				submit = "Cancel Answers and Go to Login";
-			}			
-			
-			
-			rc = new RenderingConfiguration.
-					RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(stateCont.getPageNmbr()).user(stateCont.getUser()).
-					verticalDisplay(true).surveyResults(results).build();		//TODO move this			
+			}						
 			
 			
 			if (submit.equals(QUIT) || submit.equals(LOGINRETN))
 			{
-				System.out.println("\n\n***QUIT SELECTED***\n\n");				
+				System.out.println("QUIT SELECTED\n");				
 				if (req.isRequestedSessionIdValid()) sessionCont.invalidate();	//erase conversational state
 				response.append(RenderingService.renderLogin(rc));    //go to login (user logged out)
 			}
 			else if (submit.equals(PREFS))
 			{
-				System.out.println("\n\n***USER PREFERENCES SELECTED***\n\n");
+				System.out.println("USER PREFERENCES SELECTED");
 				response.append(RenderingService.renderUserPreferencesPage(rc)); //go to preferences
 			}
 			else if (submit.equals(MATCHES) || submit.equals(FINISH))
 			{
-				System.out.println("\n\n***DEBRIEF SELECTED***\n\n"); 
+				System.out.println("DEBRIEF SELECTED");
+				System.out.println("StatePages= " +stateCont.getPageNmbr() +" | SurveyPageNumber= " +_survey.getNumPages() +". \n");
 				if (stateCont.getPageNmbr() == _survey.getNumPages() && submit.equals(FINISH)) 
-				{
+				{		//TODO persist user results
 					response.append(RenderingService.renderDebriefingScreen(rc));	//go to matches/debrief screen
 				}
 				else if (stateCont.getPageNmbr() == -1 && submit.equals(MATCHES))
@@ -229,94 +228,74 @@ public class SurveyServlet extends HttpServlet
 			}
 			else if ( submit.equals(NEXT) || submit.equals(QUITPREFS) || submit.equals(SURVEY) )
 			{
-				//render q's or start page for returning users. 
+				System.out.println("NEXT/SURVEY/QUITPREFS SELECTED");
 				
-				System.out.println("\n\n***NEXT/SURVEY/QUITPREFS SELECTED***\n\n");
-				//Next Question
 				
-				//TODO Save Preferences and Return  goes to Next Question
 				
-				String username = stateCont.getUser().getName();
-			
-				
-				// This will be the page number of the page we just came from
-				String pageNum = req.getParameter("pagenum");
-				int pageNo = 0; // 0 means we came from before the survey
-				if (pageNum != null && !pageNum.isEmpty()) 
+				if (submit.equals(NEXT) && stateCont.getPageNmbr() < _survey.getNumPages() )
+				{   System.out.println("NEXT PAGE");
+					//store result 
+//					Enumeration en = req.getParameterNames();
+//					System.out.print("\n\nParams: ");
+//					while (en.hasMoreElements())
+//					{
+//						String param = (String) en.nextElement();
+//						System.out.print(param + " = " +req.getParameter(param) +" .\n\n");
+//					}
+					
+					//render next question
+					int nextPage = stateCont.getPageNmbr()+1;
+					response.append(RenderingService.renderQuestion(rc = new RenderingConfiguration.
+							RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(nextPage).
+							user(stateCont.getUser()).verticalDisplay(true).surveyResults(results).build()));
+					System.out.println("Next page number is " + nextPage);
+					stateCont.setPageNmbr(nextPage);
+				}
+				else if (submit.equals(SURVEY) && stateCont.getPageNmbr() < 1 )
 				{
-					try 
+					System.out.println("FIRST PAGE");
+					//render first page
+					int nextPage = 1;
+					response.append(RenderingService.renderQuestion(rc = new RenderingConfiguration.
+							RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(nextPage).
+							user(stateCont.getUser()).verticalDisplay(true).surveyResults(results).build()));
+					System.out.println("Next page number is " + nextPage);
+					stateCont.setPageNmbr(nextPage);
+				}
+				else if ( submit.equals(QUITPREFS) )
+				{					
+					System.out.println("QUIT PREFS");
+														
+					int lastPage = stateCont.getPageNmbr();
+					
+					if (lastPage < 1)
 					{
-						pageNo = Integer.parseInt(pageNum);
-					} catch (Exception exc) {
-						// XXX somebody passed us a parameter value that wasn't an integer
+						boolean newUser = false;
+						if (lastPage == 0) newUser=true;
+						response.append(RenderingService.renderUserHome(rc = new RenderingConfiguration.
+								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(lastPage).
+								user(stateCont.getUser()).verticalDisplay(true).surveyResults(results).build(), newUser));
 					}
-				} 
-				
-				/* XXX Next you have to implement the following logic to store answers:
-				 * 1. If the page number is out of bounds, take an appropriate error action
-				 * 2. If the page is number 0, it was the landing page, what do you do?
-				 * 3. If the page was the last page of the survey, persist the user's answers
-				 *    to a non-volatile store (of your choosing), then redirect her/him to a 
-				 *    debriefing page which you must create as a separate servlet. That servlet
-				 *    should list the answers the user gave and rank order the best matches
-				 * 4. Otherwise you came from a "normal" survey page, save the answers for 
-				 *    that user and that page in conversational state (not the persistent store).
-				*/
-				if (pageNo < 0 || pageNo > _survey.getNumPages()) 
-				{
-					// XXX somebody passed us an integer, but it was out of survey range
-					// What error correction will you take?
-				} else if (pageNo == 0) 
-				{
-					// XXX you came from the initial page, skip the answer logic
-				} else 
-				{ 
-					// XXX check to see if there were responses on a page you were just on
-					// if there were, stash them in conversational state for that user.
-				}
-				
-				// Now we can move on to the response
-		
-				// OK, worry about generating the next page
-				// XXX The work below assumes you clicked the Submit button on the demo
-				// You will have to create an alternate response flow to handle "Quit"
-				pageNo++;
-				log.fine("Next page number is " + pageNo);
-				
-				StringBuffer sb = new StringBuffer();
-				sb.append("<HTML>\n<HEAD>\n<TITLE>CST425 Lab 2 Given Survey</TITLE>\n</HEAD>\n<BODY>\n");
-				
-				// logic: is the survey done? If yes then save and go to the landing page
-				if (pageNo > _survey.getNumPages()) {
-					// XXX save the survey answers to the file
-					// survey is complete, erase the conversational state (XXX you do that) and 
-					// print a debrief page (XXX you add a link back to the homepage)
-					sb.append("<em>You have finished the survey</em>\n");
-				} else { // No, survey is not done: write the next survey question out		
-					SurveyItem item = _survey.getSurveyItem(pageNo);
-					sb.append("<p>\nSurvey page: " + pageNo + " for user " + username + "<br/>\n");
-					sb.append(item.getQuestion() + "\n\n");
-					sb.append("</p>\n<FORM ACTION=\"" + req.getRequestURI() + "\" METHOD=\"POST\">\n");
-					// XXX These hidden parameters must go!
-					sb.append("<INPUT TYPE=\"hidden\" NAME=\"pagenum\" VALUE=\"" + pageNo + "\"/>\n");
-					sb.append("<INPUT TYPE=\"hidden\" NAME=\"username\" VALUE=\"" + username + "\"/>\n");
-		
-					// XXX You must take into account the user's individual preferences for rendering! 
-					String[] choices = item.getChoices();
-					for (int i = 0; choices != null && i < choices.length; i++) {
-						// The answers Map stores choices by number
-						sb.append("<INPUT TYPE=\"radio\" NAME=\"answer\" VALUE=\"" + i + "\">" + choices[i] + "</INPUT>\n<br/>\n");
+					else if (lastPage == _survey.getNumPages())
+					{						
+						response.append(RenderingService.renderDebriefingScreen(rc = new RenderingConfiguration.
+								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(lastPage).
+								user(stateCont.getUser()).verticalDisplay(true).surveyResults(results).build())); //TODO see if this is needed can't rmbr if displayed or not 
 					}
-					sb.append("<INPUT TYPE=\"submit\" VALUE=\"Submit\"/>\n<br/>\n");
-					sb.append("</FORM>\n"); 
+					else if (lastPage > 0 && lastPage <= _survey.getNumPages())
+					{
+						response.append(RenderingService.renderQuestion(rc = new RenderingConfiguration.
+								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(lastPage).
+								user(stateCont.getUser()).verticalDisplay(true).surveyResults(results).build()));
+					}
+					
+					System.out.println("Same page number is " + lastPage);					
 				}
-			
-				sb.append("</BODY>\n</HTML>");
-				// if we made it this far, we should be OK...
-				res.setStatus(responseCode);
-				res.setContentType("text/html");
-				PrintWriter out= res.getWriter();
-				out.println(sb.toString());
+				else
+				{
+					System.out.println("ERROR HERE");
+					//error handling here
+				}			
 			} //end if/else check quit/preferences/surveyQ's/results
 		} //end if/else check session
 		
