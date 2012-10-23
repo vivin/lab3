@@ -66,7 +66,11 @@ public class RenderingService {
 
         UserSurveyResult userSurveyResult = surveyResults.getUserSurveyResultForUser(user);
         int answer = userSurveyResult.getAnswerForSurveyItem(surveyItem);
-
+        
+        if (answer >= 0 && currentQuestion != 1)
+        { userSurveyResult.setAnswerForSurveyItem(surveyItem, answer);
+        }
+       
         StringBuilder stringBuilder = new StringBuilder(HEADER);
 
         stringBuilder.append("\t<form name=\"questionForm\" method=\"POST\" action=\"").append(renderingConfiguration.getFormURL()).append("\">\n");

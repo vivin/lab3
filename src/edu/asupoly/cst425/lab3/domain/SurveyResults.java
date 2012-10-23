@@ -50,6 +50,7 @@ public final class SurveyResults {
 
             objectOutputStream.close();
         }
+        System.out.println("\n\n***FINISHED SAVE!!!***\n\n");
 
     }
 

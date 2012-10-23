@@ -5,17 +5,12 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
 import java.util.logging.Logger;
-import edu.asupoly.cst425.lab3.domain.ConversationState;
 import edu.asupoly.cst425.lab3.domain.RenderingConfiguration;
 import edu.asupoly.cst425.lab3.domain.Survey;
 import edu.asupoly.cst425.lab3.domain.SurveyResults;
 import edu.asupoly.cst425.lab3.domain.User;
 import edu.asupoly.cst425.lab3.domain.UserSurveyResult;
 import edu.asupoly.cst425.lab3.service.RenderingService;
-
-
-import java.util.Enumeration;
-
 
 
 @SuppressWarnings("serial")
@@ -48,20 +43,23 @@ public class SurveyServlet extends HttpServlet
 					
 					if (resultsFileName == null) 
 					{ 
-						String resultDefaultLoc = "/WEB-INF/classes/results.txt";
-						results = new SurveyResults(_survey, resultDefaultLoc);		//location of results will be stored in default location
+						resultsFileName = "/WEB-INF/classes/results";						
 						log.info("Error: InitParameter for 'resultsFile' not found in web.xml!\n" +
-								"Using default location: /%TOMCAT_HOME" +resultDefaultLoc);
+								"Using default location: /%TOMCAT_HOME" +resultsFileName);
 					}
+					
+					results = new SurveyResults(_survey, context.getRealPath(resultsFileName));   //location of results is specified in web.xml
+											
+					if ( new File(context.getRealPath(resultsFileName)).isFile() )
+					{
+						System.out.println("Restoring results file.");
+						results.restore();
+					} 
 					else
 					{
-						results = new SurveyResults(_survey, resultsFileName);   //location of results is specified in web.xml
-						
-						if ( new File (context.getRealPath(resultsFileName)).isFile() )
-						{
-							results.restore();
-						} //end check for results pre-existing
-						
+						System.out.println("No results found creating new file");
+					//	boolean result = new File(context.getRealPath(resultsFileName)).createNewFile();	//TODO FIX FILE STUFF (PERMISSIONS ISSUE?)
+					//	System.out.println("***Created new file: " +result );
 					} //end setup results storage file init and location				
 				}
 				else
@@ -127,7 +125,7 @@ public class SurveyServlet extends HttpServlet
 					System.out.println("START");
 					if (req.getParameter("submit").equals("Start Now!"))
 					{
-						System.out.println("\n***START NOW SELECTED***\n");
+						System.out.println("START NOW SELECTED\n");
 					}
 				}
 				else
@@ -143,33 +141,30 @@ public class SurveyServlet extends HttpServlet
 				HttpSession newSession = req.getSession(true);		//create new session if not found
 				User newUser = new User(username);				
 				UserSurveyResult userResults = results.getUserSurveyResultForUser(newUser);  //get results if user previously took survey (but session has expired) 
-				int setStartPageNmbr = -1; //default to returning user choice page				
-				
+								
 				rc = new RenderingConfiguration.RenderingConfigurationBuilder(req.getRequestURI()).user(newUser).build();
 				
 				if (userResults == null)
 				{
 					System.out.println("NEW USER");
-					userResults = new UserSurveyResult(newUser);
-					results.addUserSurveyResult(userResults);
-					setStartPageNmbr = 0;	//start at beginning of the survey									
+					userResults = new UserSurveyResult(newSession.getId(), newUser, 0);
+					results.addUserSurveyResult(userResults);														
 					response.append(RenderingService.renderUserHome(rc, true)); 	//display HTML for home screen as new user
 				}		
 				else
 				{
 					System.out.println("RETURNING USER");
-					//display HTML for home screen as is a returning user					
-					response.append(RenderingService.renderUserHome(rc, false));					
+					userResults = new UserSurveyResult(newSession.getId(), newUser, -1);							
+					response.append(RenderingService.renderUserHome(rc, false));	//display HTML for home screen as is a returning user							
 				}
-								
-				ConversationState newState = new ConversationState(newSession.getId(), newUser, setStartPageNmbr); //setup object to store info about session
-				newSession.setAttribute(newSession.getId(), newState); //store the session object					
+				
+				newSession.setAttribute(newSession.getId(), userResults); //store the session object					
 			}
 		}
 		else
 		{
 			//TODO Move these to consts up top
-			final String PREFS = "User Preferences";					//these are "cmds" that are used in SurveySurvlet and also the user sees these as buttons
+			final String PREFS = "User Preferences";					
 			final String QUIT = "Cancel Answers and Logout";			
 			final String NEXT = "Next Question";
 			final String FINISH = "Finish Survey";
@@ -180,27 +175,42 @@ public class SurveyServlet extends HttpServlet
 			final String HOMERETN = "Return to UserHome";
 			final String LOGINRETN = "Return to LogIn";
 			
+			final String COOKIENAME = "e425MatchPrefs";
 			
-			
+			//TODO REMOVE SYS OUTS
 			System.out.println("CONTINUING CONVERSATION USER");
-			ConversationState stateCont = (ConversationState) sessionCont.getAttribute(sessionCont.getId()); //TODO Check for cookie here for PREFERENCES
+			UserSurveyResult userState = (UserSurveyResult) sessionCont.getAttribute(sessionCont.getId()); 
+			Cookie cookie = null;
+			boolean displayVerticalPref = true;
 			
-						
-			
-			
+			//Check for cookies and edit display preferences if found and horizontal is true
+			Cookie[] cookies = req.getCookies();			
+			for (int i=0; i < cookies.length; i++)
+			{
+				if (cookies[i].getName().equals(COOKIENAME))
+				{
+					if (cookies[i].getValue().equals("false"))
+					{ 
+					  displayVerticalPref = false; 
+					  cookie = cookies[i]; 
+					}
+				}
+			}
+					
+			//Check value of submit button 
 			String submit = req.getParameter("submit");
 			
-			if (submit == null || stateCont == null )  //TODO take submit off of here when ready 
+			if (submit == null || userState == null )  
 			{
-				response.append(RenderingService.renderErrorScreen(req.getRequestURI(), "Submit or stateCont was null", false));
+				System.out.println("submit or userState is null!\n");
+				response.append(RenderingService.renderErrorScreen(req.getRequestURI(), "You were linked here by accident", false)); 
 				submit = "Cancel Answers and Go to Login";
-			}						
-			
-			
-			if (submit.equals(QUIT) || submit.equals(LOGINRETN))
+			}			
+			else if (submit.equals(QUIT) || submit.equals(LOGINRETN))
 			{
 				System.out.println("QUIT SELECTED\n");				
 				if (req.isRequestedSessionIdValid()) sessionCont.invalidate();	//erase conversational state
+				results.removeUserSurveyResultForUser(userState.getUser());
 				response.append(RenderingService.renderLogin(rc));    //go to login (user logged out)
 			}
 			else if (submit.equals(PREFS))
@@ -210,19 +220,20 @@ public class SurveyServlet extends HttpServlet
 			}
 			else if (submit.equals(MATCHES) || submit.equals(FINISH))
 			{
+				int pageNmbr = userState.getPageNmbr();
 				System.out.println("DEBRIEF SELECTED");
-				System.out.println("StatePages= " +stateCont.getPageNmbr() +" | SurveyPageNumber= " +_survey.getNumPages() +". \n");
-				if (stateCont.getPageNmbr() == _survey.getNumPages() && submit.equals(FINISH)) 
-				{		//TODO persist user results
+				System.out.println("StatePages= " +pageNmbr +" | SurveyPageNumber= " +_survey.getNumPages() +". \n");
+												
+				if ( (pageNmbr == _survey.getNumPages() && submit.equals(FINISH)) || (pageNmbr == -1 && submit.equals(MATCHES)) ) 
+				{	
+					results.persistUserSurveyResultForUser(userState.getUser());	//persist results 
+					results.save();
+					
 					response.append(RenderingService.renderDebriefingScreen(rc));	//go to matches/debrief screen
-				}
-				else if (stateCont.getPageNmbr() == -1 && submit.equals(MATCHES))
-				{
-					response.append(RenderingService.renderDebriefingScreen(rc));	//go to matches/debrief screen
-				}
+				}			
 				else
 				{
-					stateCont.setPageNmbr(0); //set page number to 0 an error or malicious user 
+					userState.setPageNmbr(0); //set page number to 0 an error or malicious user 
 					response.append(RenderingService.renderErrorScreen(req.getRequestURI(), "", false));  //set non-user error for now
 				}
 			}
@@ -230,71 +241,89 @@ public class SurveyServlet extends HttpServlet
 			{
 				System.out.println("NEXT/SURVEY/QUITPREFS SELECTED");
 				
+				int pageNmbr = userState.getPageNmbr();
 				
-				
-				if (submit.equals(NEXT) && stateCont.getPageNmbr() < _survey.getNumPages() )
+				if (submit.equals(NEXT) && pageNmbr < _survey.getNumPages() )
 				{   System.out.println("NEXT PAGE");
-					//store result 
-//					Enumeration en = req.getParameterNames();
-//					System.out.print("\n\nParams: ");
-//					while (en.hasMoreElements())
-//					{
-//						String param = (String) en.nextElement();
-//						System.out.print(param + " = " +req.getParameter(param) +" .\n\n");
-//					}
 					
-					//render next question
-					int nextPage = stateCont.getPageNmbr()+1;
-					response.append(RenderingService.renderQuestion(rc = new RenderingConfiguration.
-							RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(nextPage).
-							user(stateCont.getUser()).verticalDisplay(true).surveyResults(results).build()));
-					System.out.println("Next page number is " + nextPage);
-					stateCont.setPageNmbr(nextPage);
+					
+					//TODO STORE RESULTS OF LAST QUESTION 
+					
+				
+					pageNmbr = pageNmbr+1;
+					response.append(RenderingService.renderQuestion(rc = new RenderingConfiguration.	//renders next page in the survey
+							RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNmbr).
+							user(userState.getUser()).verticalDisplay(displayVerticalPref).surveyResults(results).build()));
+					System.out.println("Next page number is " + pageNmbr);
+					userState.setPageNmbr(pageNmbr);
+					
+					
+					
 				}
-				else if (submit.equals(SURVEY) && stateCont.getPageNmbr() < 1 )
+				else if (submit.equals(SURVEY) && pageNmbr < 1 )
 				{
-					System.out.println("FIRST PAGE");
-					//render first page
-					int nextPage = 1;
-					response.append(RenderingService.renderQuestion(rc = new RenderingConfiguration.
-							RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(nextPage).
-							user(stateCont.getUser()).verticalDisplay(true).surveyResults(results).build()));
-					System.out.println("Next page number is " + nextPage);
-					stateCont.setPageNmbr(nextPage);
+					System.out.println("FIRST PAGE");					
+					
+					response.append(RenderingService.renderQuestion(rc = new RenderingConfiguration.	//renders the first page of the survey
+							RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(1).
+							user(userState.getUser()).verticalDisplay(displayVerticalPref).surveyResults(results).build()));
+					System.out.println("Next page number is " + 1);
+					
+					userState.setPageNmbr(1);  //page number is 1 as is first page
 				}
 				else if ( submit.equals(QUITPREFS) )
 				{					
 					System.out.println("QUIT PREFS");
-														
-					int lastPage = stateCont.getPageNmbr();
+					String vertPref = "true";			//true is default
+					String displayPref = req.getParameter("displayPreference");					
 					
-					if (lastPage < 1)
+					if (displayPref.equals("horizontal") && displayVerticalPref == true)
+					{
+						displayVerticalPref = false;
+						vertPref = "false";
+					}					
+					
+					if (cookie != null)
+					{
+						cookie.setValue(vertPref);		//cookie found change the value if allowed
+						res.addCookie(cookie);
+					}
+					else
+					{
+						Cookie prefsCookie = new Cookie(COOKIENAME, vertPref);	 //set a new cookie with preference
+						res.addCookie(prefsCookie);
+					}
+					
+										
+					if (pageNmbr < 1)
 					{
 						boolean newUser = false;
-						if (lastPage == 0) newUser=true;
-						response.append(RenderingService.renderUserHome(rc = new RenderingConfiguration.
-								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(lastPage).
-								user(stateCont.getUser()).verticalDisplay(true).surveyResults(results).build(), newUser));
+						if (pageNmbr == 0) newUser=true;
+						response.append(RenderingService.renderUserHome(rc = new RenderingConfiguration.				//go back/render preferences screen
+								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNmbr).
+								user(userState.getUser()).verticalDisplay(displayVerticalPref).surveyResults(results).build(), newUser));
 					}
-					else if (lastPage == _survey.getNumPages())
+					else if (pageNmbr > _survey.getNumPages())
 					{						
 						response.append(RenderingService.renderDebriefingScreen(rc = new RenderingConfiguration.
-								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(lastPage).
-								user(stateCont.getUser()).verticalDisplay(true).surveyResults(results).build())); //TODO see if this is needed can't rmbr if displayed or not 
+								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNmbr).
+								user(userState.getUser()).verticalDisplay(displayVerticalPref).surveyResults(results).build())); //TODO see if this is needed can't rmbr if displayed or not 
 					}
-					else if (lastPage > 0 && lastPage <= _survey.getNumPages())
+					else if (pageNmbr > 0 && pageNmbr <= _survey.getNumPages())
 					{
 						response.append(RenderingService.renderQuestion(rc = new RenderingConfiguration.
-								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(lastPage).
-								user(stateCont.getUser()).verticalDisplay(true).surveyResults(results).build()));
+								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNmbr).
+								user(userState.getUser()).verticalDisplay(displayVerticalPref).surveyResults(results).build()));	//go back/render to survey question previously at
 					}
 					
-					System.out.println("Same page number is " + lastPage);					
+					System.out.println("Same page number is " + pageNmbr);					
 				}
 				else
 				{
 					System.out.println("ERROR HERE");
-					//error handling here
+					userState.setPageNmbr(0); //set page number to 0 an error or malicious user 
+					response.append(RenderingService.renderErrorScreen(req.getRequestURI(), "", false));  //set non-user error for now
+					//TODO error handling here
 				}			
 			} //end if/else check quit/preferences/surveyQ's/results
 		} //end if/else check session

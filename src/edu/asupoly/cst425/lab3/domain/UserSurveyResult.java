@@ -14,17 +14,37 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class UserSurveyResult {
 
-    private User user;
+    private final User user;
+    private final String id;
+    private int pageNmbr;
     private Map<SurveyItem, Integer> answers;
+        
 
-    public UserSurveyResult(User user) {
+    public UserSurveyResult(String id, User user, int beginPageNmbr) 
+    {
+    	this.id = id;
         this.user = user;
+        this.setPageNmbr(beginPageNmbr);
         answers = new ConcurrentHashMap<SurveyItem, Integer>(new LinkedHashMap<SurveyItem, Integer>());
     }
+    
+    public String getId() {
+		return id;
+	}
 
     public User getUser() {
         return user;
-    }
+    }	
+
+	public synchronized int getPageNmbr() {
+		return pageNmbr;
+	}
+
+	public synchronized void setPageNmbr(int pageNmbr) {
+		this.pageNmbr = pageNmbr;
+	}
+    
+    
 
     public void setAnswerForSurveyItem(SurveyItem surveyItem, int answer) {
         if(answer < 0) {
