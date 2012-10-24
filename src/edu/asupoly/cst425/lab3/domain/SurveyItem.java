@@ -81,5 +81,4 @@ public final class SurveyItem implements Serializable {
 
         return result;
     }
-
 }

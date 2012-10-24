@@ -1,7 +1,6 @@
 package edu.asupoly.cst425.lab3.service;
 
 import edu.asupoly.cst425.lab3.domain.*;
-
 import java.util.List;
 import java.util.Set;
 
@@ -10,16 +9,15 @@ public class RenderingService {
     private static final String HEADER = "<html>\n\t<head>\n\t\t<title>e425Match.com: Find your next CST425 lab partner online!</title>\n\t</head>\n\t<body>\n";
     private static final String FOOTER = "\n\t</body>\n</html>";
    
-    private static final String PREFS = "User Preferences";					//these are "cmds" that are used in SurveySurvlet and also the user sees these as buttons
-    private static final String QUIT = "Cancel Answers and Logout";			//TODO change this to save answers and go home?
-    private static final String NEXT = "Next Question";
-    private static final String FINISH = "Finish Survey";
-    private static final String QUITPREFS = "Save Preferences and Return";
-  
-    private static final String SURVEY = "Enter Survey";
-    private static final String MATCHES = "See your matches";
-    private static final String HOMERETN = "Return to UserHome";
-    private static final String LOGINRETN = "Return to LogIn";
+    private static final String PREFS = "User Preferences";					
+	private static final String QUIT = "Cancel Answers and Logout";			
+	private static final String NEXT = "Next Question";
+	private static final String FINISH = "Finish Survey";
+	private static final String QUITPREFS = "Save Preferences and Return";  
+	private static final String SURVEY = "Enter Survey";
+	private static final String MATCHES = "See your matches";
+	private static final String LOGINRETURN = "Return to LogIn";
+	private static final String COOKIENAME = "e425MatchPrefs";    
     private static final String LOGIN = "Login to e425Match";			  //not a cmd
   
     public static String renderLogin(RenderingConfiguration renderingConfiguration) 
@@ -45,7 +43,7 @@ public class RenderingService {
     	sb.append("\t<form name=\"valuedUserForm\" method=\"POST\" action=\"").append(renderingConfiguration.getFormURL()).append("\">\n");
     	sb.append("\t\t<p>What would you like to do?</p>\n");
     	sb.append("\t\t<input type=\"hidden\" name=\"blank\" value=\"\" />\n");
-    	sb.append("\t\t<input type=\"submit\" name=\"submit\" value=\"" +LOGINRETN +"\" />\n"); //TODO Change these to be more meaningful
+    	sb.append("\t\t<input type=\"submit\" name=\"submit\" value=\"" +LOGINRETURN +"\" />\n"); //TODO Change these to be more meaningful
     	sb.append("\t\t<input type=\"submit\" name=\"submit\" value=\"" +PREFS +"\" />\n");
         sb.append("\t\t<input type=\"submit\" name=\"submit\" value=\"" +SURVEY +"\" />\n");
         if (!userNew) sb.append("\t\t<input type=\"submit\" name=\"submit\" value=\"" +MATCHES +"\" />\n");
@@ -139,9 +137,9 @@ public class RenderingService {
         }
         stringBuilder.append("\t</table>");
         
-        stringBuilder.append("\t<br /><form name=\"ReturnToLoginForm\" method=\"LINK\" action=\"").append(renderingConfiguration.getFormURL()).append("\"\n");
+        stringBuilder.append("\t<br /><form name=\"ReturnToLoginForm\" method=\"POST\" action=\"").append(renderingConfiguration.getFormURL()).append("\"\n");
         stringBuilder.append("\t\t<input type=\"hidden\" value=\"\" />\n");
-        stringBuilder.append("\t\t<p><input name=\"submit\" type=\"submit\" value=\"" +HOMERETN +"\" /></p>\n");
+        stringBuilder.append("\t\t<p><input name=\"submit\" type=\"submit\" value=\"" +LOGINRETURN +"\" /></p>\n");
         stringBuilder.append("\t</form>"); 
 
         stringBuilder.append(FOOTER);
@@ -170,9 +168,9 @@ public class RenderingService {
     		sb.append("\t<p>" +specificErrorMsg +"<p>\n");	//customizable error message
     	}
     	
-    	sb.append("\t<br /><form name=\"ReturnToLoginForm\" method=\"LINK\" action=\"").append(homeUrl).append("\"\n");
+    	sb.append("\t<br /><form name=\"ReturnToLoginForm\" method=\"POST\" action=\"").append(homeUrl).append("\"\n");
     	sb.append("\t\t<input type=\"hidden\" value=\"\" />\n");
-    	sb.append("\t\t<p><input name=\"submit\" type=\"submit\" value=\"" +LOGINRETN +"\" /></p>\n");
+    	sb.append("\t\t<p><input name=\"submit\" type=\"submit\" value=\"" +LOGINRETURN +"\" /></p>\n");
     	sb.append("\t</form>");    
     	
     	sb.append(FOOTER);    	

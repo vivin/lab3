@@ -10,28 +10,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * User: vivin
  * Date: 10/20/12
  * Time: 2:44 PM
- * To change this template use File | Settings | File Templates.
  */
 public final class UserSurveyResult implements Serializable {
 
     private final User user;
-    private transient final String id;
     private transient int startPageNumber;
     private Map<SurveyItem, Integer> answers;
         
-
-    public UserSurveyResult(String id, User user, int startPageNumber)
-    {
-    	this.id = id;
+    public UserSurveyResult(User user, int startPageNumber) {
         this.user = user;
         this.startPageNumber = startPageNumber;
         answers = new ConcurrentHashMap<SurveyItem, Integer>(new LinkedHashMap<SurveyItem, Integer>());
     }
     
-    public String getId() {
-		return id;
-	}
-
     public User getUser() {
         return user;
     }	
@@ -65,9 +56,4 @@ public final class UserSurveyResult implements Serializable {
 
         return answer;
     }
-
-    public void clear() {
-         answers = new ConcurrentHashMap<SurveyItem, Integer>(new LinkedHashMap<SurveyItem, Integer>());
-    }
-
 }

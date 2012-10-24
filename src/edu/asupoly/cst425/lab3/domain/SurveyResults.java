@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class SurveyResults {
 
-    private transient Map<User, UserSurveyResult> userSurveyResults;
+    private Map<User, UserSurveyResult> userSurveyResults;
     private volatile Map<User, UserSurveyResult> completedUserSurveyResults;
     private final Survey survey;
     private final String fileName;
@@ -27,7 +27,21 @@ public final class SurveyResults {
     }
 
     public UserSurveyResult getUserSurveyResultForUser(User user) {
-        return userSurveyResults.get(user);
+        UserSurveyResult userSurveyResult = userSurveyResults.get(user);
+
+        //If the survey result doesn't exist in the existing survey result, let's see if it exists in the completed results. If so, let's
+        //copy that over to userSurveyResults and return what we got.
+        if(userSurveyResult == null) {
+            synchronized (completedUserSurveyResults) {
+                userSurveyResult = completedUserSurveyResults.get(user);
+            }
+
+            if(userSurveyResult != null) {
+                userSurveyResults.put(user, userSurveyResult);
+            }
+        }
+
+        return userSurveyResult;
     }
 
     public void removeUserSurveyResultForUser(User user) {
@@ -43,39 +57,28 @@ public final class SurveyResults {
             File file = new File(fileName);
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-
             synchronized (completedUserSurveyResults) {
                 objectOutputStream.writeObject(completedUserSurveyResults);
             }
 
             objectOutputStream.close();
         }
-        System.out.println("\n\n***FINISHED SAVE!!!***\n\n");
-
     }
 
     public void restore() throws IOException, ClassNotFoundException {
         synchronized (fileName) {
             File file = new File(fileName);
             FileInputStream fileInputStream = new FileInputStream(file);
-	    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-	    // DataInputStream objectInputStream = new DataInputStream(fileInputStream);
+	        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
             userSurveyResults = new ConcurrentHashMap<User, UserSurveyResult>();
 
             synchronized (completedUserSurveyResults) {
                 completedUserSurveyResults = (ConcurrentHashMap<User, UserSurveyResult>) objectInputStream.readObject();
-
-                for(Map.Entry<User, UserSurveyResult> entry : completedUserSurveyResults.entrySet()) {
-                    userSurveyResults.put(entry.getKey(), entry.getValue());
-                }
             }
 
             objectInputStream.close();
         }
-    }
-
-    public Map<User, UserSurveyResult> getCompletedUserSurveyResults() {
-        return Collections.unmodifiableMap(completedUserSurveyResults);
     }
 
     public List<User> score(User user) {
