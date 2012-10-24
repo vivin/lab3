@@ -50,20 +50,22 @@ public final class SurveyResults {
 
             objectOutputStream.close();
         }
-        System.out.println("\n\n***FINISHED SAVE!!!***\n\n");
-
     }
 
     public void restore() throws IOException, ClassNotFoundException {
         synchronized (fileName) {
             File file = new File(fileName);
             FileInputStream fileInputStream = new FileInputStream(file);
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-
+	    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+	    // DataInputStream objectInputStream = new DataInputStream(fileInputStream);
             userSurveyResults = new ConcurrentHashMap<User, UserSurveyResult>();
 
             synchronized (completedUserSurveyResults) {
                 completedUserSurveyResults = (ConcurrentHashMap<User, UserSurveyResult>) objectInputStream.readObject();
+
+                for(Map.Entry<User, UserSurveyResult> entry : completedUserSurveyResults.entrySet()) {
+                    userSurveyResults.put(entry.getKey(), entry.getValue());
+                }
             }
 
             objectInputStream.close();
@@ -74,9 +76,9 @@ public final class SurveyResults {
         return Collections.unmodifiableMap(completedUserSurveyResults);
     }
 
-    public Set<User> score(User user) {
+    public List<User> score(User user) {
 
-        Set<User> scoredUsers = new TreeSet<User>();
+        List<User> scoredUsers = new ArrayList<User>();
 
         synchronized (completedUserSurveyResults) {
 
@@ -91,7 +93,7 @@ public final class SurveyResults {
                     int matchingAnswers = 0;
 
                     for(int i = 0; i < survey.getNumPages(); i++) {
-                        SurveyItem surveyItem = survey.getSurveyItem(i);
+                        SurveyItem surveyItem = survey.getSurveyItem(i + 1);
 
                         if(mainUserSurveyResult.getAnswerForSurveyItem(surveyItem) == userToScoreUserSurveyResult.getAnswerForSurveyItem(surveyItem)) {
                             matchingAnswers++;
@@ -103,6 +105,8 @@ public final class SurveyResults {
                 }
             }
         }
+
+        Collections.sort(scoredUsers);
 
         return scoredUsers;
     }

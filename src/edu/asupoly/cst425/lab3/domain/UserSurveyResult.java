@@ -1,7 +1,7 @@
 package edu.asupoly.cst425.lab3.domain;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,19 +12,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * Time: 2:44 PM
  * To change this template use File | Settings | File Templates.
  */
-public final class UserSurveyResult {
+public final class UserSurveyResult implements Serializable {
 
     private final User user;
-    private final String id;
-    private int pageNmbr;
+    private transient final String id;
+    private transient int startPageNumber;
     private Map<SurveyItem, Integer> answers;
         
 
-    public UserSurveyResult(String id, User user, int beginPageNmbr) 
+    public UserSurveyResult(String id, User user, int startPageNumber)
     {
     	this.id = id;
         this.user = user;
-        this.setPageNmbr(beginPageNmbr);
+        this.startPageNumber = startPageNumber;
         answers = new ConcurrentHashMap<SurveyItem, Integer>(new LinkedHashMap<SurveyItem, Integer>());
     }
     
@@ -36,16 +36,14 @@ public final class UserSurveyResult {
         return user;
     }	
 
-	public synchronized int getPageNmbr() {
-		return pageNmbr;
+	public int getStartPageNumber() {
+		return startPageNumber;
 	}
 
-	public synchronized void setPageNmbr(int pageNmbr) {
-		this.pageNmbr = pageNmbr;
+	public void setStartPageNumber(int startPageNumber) {
+		this.startPageNumber = startPageNumber;
 	}
     
-    
-
     public void setAnswerForSurveyItem(SurveyItem surveyItem, int answer) {
         if(answer < 0) {
             throw new IllegalArgumentException("Answer has to be a positive integer");

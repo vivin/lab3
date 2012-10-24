@@ -1,6 +1,8 @@
 package edu.asupoly.cst425.lab3.domain;
 
-public final class User implements Comparable<User> {
+import java.io.Serializable;
+
+public final class User implements Comparable<User>, Serializable {
     private String name;
     private int matchingAnswers;
 
@@ -59,6 +61,6 @@ public final class User implements Comparable<User> {
 
     @Override
     public int compareTo(User other) {
-        return this.matchingAnswers - other.matchingAnswers;
+        return other.matchingAnswers - this.matchingAnswers;
     }
 }
