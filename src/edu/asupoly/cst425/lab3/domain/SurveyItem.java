@@ -4,13 +4,14 @@
 package edu.asupoly.cst425.lab3.domain;
 
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
  * @author kgary
  *
  */
-public final class SurveyItem {
+public final class SurveyItem implements Serializable {
 	private String question;
 	private String[] choices;
 	

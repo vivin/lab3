@@ -2,6 +2,7 @@ package edu.asupoly.cst425.lab3.service;
 
 import edu.asupoly.cst425.lab3.domain.*;
 
+import java.util.List;
 import java.util.Set;
 
 public class RenderingService {
@@ -84,6 +85,8 @@ public class RenderingService {
             if(renderingConfiguration.isVerticalDisplay()) {
                 stringBuilder.append("<br />\n");
             }
+
+            i++;
         }
 
         String buttonText = NEXT;
@@ -124,7 +127,7 @@ public class RenderingService {
         User user = renderingConfiguration.getUser();
         SurveyResults surveyResults = renderingConfiguration.getSurveyResults();
 
-        Set<User> rankedUsers = surveyResults.score(user);
+        List<User> rankedUsers = surveyResults.score(user);
 
         StringBuilder stringBuilder = new StringBuilder(HEADER);
         stringBuilder.append("Here is a list of partners ranked in descending order by how best they match you:<br /><br />");

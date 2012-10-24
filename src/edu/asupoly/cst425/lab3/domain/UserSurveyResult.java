@@ -16,15 +16,15 @@ public final class UserSurveyResult implements Serializable {
 
     private final User user;
     private transient final String id;
-    private transient int pageNumber;
+    private transient int startPageNumber;
     private Map<SurveyItem, Integer> answers;
         
 
-    public UserSurveyResult(String id, User user, int beginPageNmbr) 
+    public UserSurveyResult(String id, User user, int startPageNumber)
     {
     	this.id = id;
         this.user = user;
-        this.setPageNumber(beginPageNmbr);
+        this.startPageNumber = startPageNumber;
         answers = new ConcurrentHashMap<SurveyItem, Integer>(new LinkedHashMap<SurveyItem, Integer>());
     }
     
@@ -36,16 +36,14 @@ public final class UserSurveyResult implements Serializable {
         return user;
     }	
 
-	public synchronized int getPageNumber() {
-		return pageNumber;
+	public int getStartPageNumber() {
+		return startPageNumber;
 	}
 
-	public synchronized void setPageNumber(int pageNumber) {
-		this.pageNumber = pageNumber;
+	public void setStartPageNumber(int startPageNumber) {
+		this.startPageNumber = startPageNumber;
 	}
     
-    
-
     public void setAnswerForSurveyItem(SurveyItem surveyItem, int answer) {
         if(answer < 0) {
             throw new IllegalArgumentException("Answer has to be a positive integer");

@@ -61,6 +61,6 @@ public final class User implements Comparable<User>, Serializable {
 
     @Override
     public int compareTo(User other) {
-        return this.matchingAnswers - other.matchingAnswers;
+        return other.matchingAnswers - this.matchingAnswers;
     }
 }
