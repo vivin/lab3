@@ -5,11 +5,8 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.*;
 import java.util.logging.Logger;
-import edu.asupoly.cst425.lab3.domain.RenderingConfiguration;
-import edu.asupoly.cst425.lab3.domain.Survey;
-import edu.asupoly.cst425.lab3.domain.SurveyResults;
-import edu.asupoly.cst425.lab3.domain.User;
-import edu.asupoly.cst425.lab3.domain.UserSurveyResult;
+
+import edu.asupoly.cst425.lab3.domain.*;
 import edu.asupoly.cst425.lab3.service.RenderingService;
 
 
@@ -243,26 +240,28 @@ public class SurveyServlet extends HttpServlet
 			{
 				System.out.println("NEXT/SURVEY/QUITPREFS SELECTED");
 				
-				int pageNmbr = userState.getPageNumber();
+				int pageNumber = userState.getPageNumber();
 				
-				if (submit.equals(NEXT) && pageNmbr < _survey.getNumPages() )
+				if (submit.equals(NEXT) && pageNumber < _survey.getNumPages() )
 				{   System.out.println("NEXT PAGE");
 					
 					
-					//TODO STORE RESULTS OF LAST QUESTION 
-					
-				
-					pageNmbr = pageNmbr+1;
-					response.append(RenderingService.renderQuestion(rc = new RenderingConfiguration.	//renders next page in the survey
-							RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNmbr).
+					//TODO STORE RESULTS OF LAST QUESTION
+                    int answer = Integer.parseInt(req.getParameter("answer"));
+                    SurveyItem surveyItem = _survey.getSurveyItem(pageNumber);
+                    userState.setAnswerForSurveyItem(surveyItem, answer);
+
+                    pageNumber++;
+					response.append(RenderingService.renderQuestion(new RenderingConfiguration.	//renders next page in the survey
+							RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNumber).
 							user(userState.getUser()).verticalDisplay(displayVerticalPref).surveyResults(results).build()));
-					System.out.println("Next page number is " + pageNmbr);
-					userState.setPageNumber(pageNmbr);
+					System.out.println("Next page number is " + pageNumber);
+					userState.setPageNumber(pageNumber);
 					
 					
 					
 				}
-				else if (submit.equals(SURVEY) && pageNmbr < 1 )
+				else if (submit.equals(SURVEY) && pageNumber < 1 )
 				{
 					System.out.println("FIRST PAGE");					
 					
@@ -297,28 +296,28 @@ public class SurveyServlet extends HttpServlet
 					}
 					
 										
-					if (pageNmbr < 1)
+					if (pageNumber < 1)
 					{
 						boolean newUser = false;
-						if (pageNmbr == 0) newUser=true;
+						if (pageNumber == 0) newUser=true;
 						response.append(RenderingService.renderUserHome(rc = new RenderingConfiguration.				//go back/render preferences screen
-								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNmbr).
+								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNumber).
 								user(userState.getUser()).verticalDisplay(displayVerticalPref).surveyResults(results).build(), newUser));
 					}
-					else if (pageNmbr > _survey.getNumPages())
+					else if (pageNumber > _survey.getNumPages())
 					{						
 						response.append(RenderingService.renderDebriefingScreen(rc = new RenderingConfiguration.
-								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNmbr).
+								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNumber).
 								user(userState.getUser()).verticalDisplay(displayVerticalPref).surveyResults(results).build())); //TODO see if this is needed can't rmbr if displayed or not 
 					}
-					else if (pageNmbr > 0 && pageNmbr <= _survey.getNumPages())
+					else if (pageNumber > 0 && pageNumber <= _survey.getNumPages())
 					{
 						response.append(RenderingService.renderQuestion(rc = new RenderingConfiguration.
-								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNmbr).
+								RenderingConfigurationBuilder(req.getRequestURI()).currentQuestion(pageNumber).
 								user(userState.getUser()).verticalDisplay(displayVerticalPref).surveyResults(results).build()));	//go back/render to survey question previously at
 					}
 					
-					System.out.println("Same page number is " + pageNmbr);					
+					System.out.println("Same page number is " + pageNumber);
 				}
 				else
 				{
