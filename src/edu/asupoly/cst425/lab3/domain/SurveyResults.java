@@ -110,4 +110,4 @@ public final class SurveyResults {
 
         return scoredUsers;
     }
-}
+} //end class SurveyResults

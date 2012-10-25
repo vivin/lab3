@@ -70,4 +70,4 @@ public final class UserSurveyResult implements Serializable {
          answers = new ConcurrentHashMap<SurveyItem, Integer>(new LinkedHashMap<SurveyItem, Integer>());
     }
 
-}
+} //end class UserSurveyResult

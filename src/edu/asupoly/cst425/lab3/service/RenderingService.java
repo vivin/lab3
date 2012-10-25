@@ -3,6 +3,7 @@ package edu.asupoly.cst425.lab3.service;
 import edu.asupoly.cst425.lab3.domain.*;
 import java.util.List;
 import java.util.Set;
+import javax.servlet.http.*;
 
 public class RenderingService {
 
@@ -20,11 +21,11 @@ public class RenderingService {
 	private static final String COOKIENAME = "e425MatchPrefs";    
     private static final String LOGIN = "Login to e425Match";			  //not a cmd
   
-    public static String renderLogin(RenderingConfiguration renderingConfiguration) 
+    public static String renderLogin(RenderingConfiguration renderingConfiguration, HttpServletResponse res) 
     {
         StringBuilder stringBuilder = new StringBuilder(HEADER);
 
-        stringBuilder.append("\t<form name=\"loginForm\" method=\"POST\" action=\"").append(renderingConfiguration.getFormURL()).append("\">\n");
+        stringBuilder.append("\t<form name=\"loginForm\" method=\"POST\" action=\"").append(res.encodeURL(renderingConfiguration.getFormURL())).append("\">\n");
         stringBuilder.append("\t\tPlease enter your name: <input type=\"text\" name=\"username\" /><br />");
         stringBuilder.append("\t\t<input type=\"submit\" value=\"" +LOGIN +"\" />");
         stringBuilder.append("\t</form>");
@@ -34,13 +35,13 @@ public class RenderingService {
         return stringBuilder.toString();
     }
     
-    public static String renderUserHome(RenderingConfiguration renderingConfiguration, boolean userNew)
+    public static String renderUserHome(HttpServletResponse res, RenderingConfiguration renderingConfiguration, boolean userNew)
     {
     	StringBuilder sb = new StringBuilder(HEADER);
     	
     	if (userNew) {sb.append("\t<h2>Welcome ").append(renderingConfiguration.getUser().getName()).append("</h2>\n");}
     	else { sb.append("\t<h2>Welcome ").append(renderingConfiguration.getUser().getName()).append("</h2>\n"); }    	
-    	sb.append("\t<form name=\"valuedUserForm\" method=\"POST\" action=\"").append(renderingConfiguration.getFormURL()).append("\">\n");
+    	sb.append("\t<form name=\"valuedUserForm\" method=\"POST\" action=\"").append(res.encodeURL(renderingConfiguration.getFormURL())).append("\">\n");
     	sb.append("\t\t<p>What would you like to do?</p>\n");
     	sb.append("\t\t<input type=\"hidden\" name=\"blank\" value=\"\" />\n");
     	sb.append("\t\t<input type=\"submit\" name=\"submit\" value=\"" +LOGINRETURN +"\" />\n"); //TODO Change these to be more meaningful
@@ -54,7 +55,7 @@ public class RenderingService {
         return sb.toString();    	
     }
 
-    public static String renderQuestion(RenderingConfiguration renderingConfiguration) {
+    public static String renderQuestion(RenderingConfiguration renderingConfiguration, HttpServletResponse res) {
         User user = renderingConfiguration.getUser();
         SurveyResults surveyResults = renderingConfiguration.getSurveyResults();
         int currentQuestion = renderingConfiguration.getCurrentQuestion();
@@ -67,7 +68,7 @@ public class RenderingService {
         int answer = userSurveyResult.getAnswerForSurveyItem(surveyItem);
         StringBuilder stringBuilder = new StringBuilder(HEADER);
 
-        stringBuilder.append("\t<form name=\"questionForm\" method=\"POST\" action=\"").append(renderingConfiguration.getFormURL()).append("\">\n");
+        stringBuilder.append("\t<form name=\"questionForm\" method=\"POST\" action=\"").append(res.encodeURL(renderingConfiguration.getFormURL())).append("\">\n");
         stringBuilder.append(surveyItem.getQuestion()).append("<br /><br />\n\n");
 
         int i = 0;
@@ -102,11 +103,11 @@ public class RenderingService {
         return stringBuilder.toString();
     }
 
-    public static String renderUserPreferencesPage(RenderingConfiguration renderingConfiguration) {
+    public static String renderUserPreferencesPage(RenderingConfiguration renderingConfiguration, HttpServletResponse res) {
         StringBuilder stringBuilder = new StringBuilder(HEADER);
 
         stringBuilder.append("\t<h3>Please select your display preference:</h3><br />\n\n");
-        stringBuilder.append("\t<form name=\"UserPrefs\" method=\"POST\" action=\"").append(renderingConfiguration.getFormURL()).append("\">\n");
+        stringBuilder.append("\t<form name=\"UserPrefs\" method=\"POST\" action=\"").append(res.encodeURL(renderingConfiguration.getFormURL())).append("\">\n");
         stringBuilder.append("\t<p>I'd like my answers to be displayed in the following format: </p>\n");
         stringBuilder.append("\t\t<select name=\"displayPreference\">\n");
         stringBuilder.append("\t\t\t<option value=\"vertical\">Vertical</option>\n");
@@ -121,7 +122,7 @@ public class RenderingService {
         return stringBuilder.toString();
     }
 
-    public static String renderDebriefingScreen(RenderingConfiguration renderingConfiguration) {
+    public static String renderDebriefingScreen(RenderingConfiguration renderingConfiguration, HttpServletResponse res) {
         User user = renderingConfiguration.getUser();
         SurveyResults surveyResults = renderingConfiguration.getSurveyResults();
 
@@ -137,7 +138,7 @@ public class RenderingService {
         }
         stringBuilder.append("\t</table>");
         
-        stringBuilder.append("\t<br /><form name=\"ReturnToLoginForm\" method=\"POST\" action=\"").append(renderingConfiguration.getFormURL()).append("\"\n");
+        stringBuilder.append("\t<br /><form name=\"ReturnToLoginForm\" method=\"POST\" action=\"").append(res.encodeURL(renderingConfiguration.getFormURL())).append("\"\n");
         stringBuilder.append("\t\t<input type=\"hidden\" value=\"\" />\n");
         stringBuilder.append("\t\t<p><input name=\"submit\" type=\"submit\" value=\"" +LOGINRETURN +"\" /></p>\n");
         stringBuilder.append("\t</form>"); 
@@ -147,7 +148,7 @@ public class RenderingService {
         return stringBuilder.toString();
     }
     
-    public static String renderErrorScreen(String homeUrl, String specificErrorMsg, boolean userError) {
+    public static String renderErrorScreen(HttpServletResponse res, String homeUrl, String specificErrorMsg, boolean userError) {
     	StringBuilder sb = new StringBuilder("<html>\n\t<head>\n\t\t<title>e425Match.com Error</title>\n\t</head>\n\t<body>\n");
     	
     	if (userError)
@@ -168,7 +169,7 @@ public class RenderingService {
     		sb.append("\t<p>" +specificErrorMsg +"<p>\n");	//customizable error message
     	}
     	
-    	sb.append("\t<br /><form name=\"ReturnToLoginForm\" method=\"POST\" action=\"").append(homeUrl).append("\"\n");
+    	sb.append("\t<br /><form name=\"ReturnToLoginForm\" method=\"POST\" action=\"").append(res.encodeURL(homeUrl)).append("\"\n");
     	sb.append("\t\t<input type=\"hidden\" value=\"\" />\n");
     	sb.append("\t\t<p><input name=\"submit\" type=\"submit\" value=\"" +LOGINRETURN +"\" /></p>\n");
     	sb.append("\t</form>");    
@@ -178,14 +179,14 @@ public class RenderingService {
     	return sb.toString();    	
     }
     
-    public static String renderLoginError(RenderingConfiguration renderingConfiguration, String specificErrorMsg) 
+    public static String renderLoginError(RenderingConfiguration renderingConfiguration, HttpServletResponse res, String specificErrorMsg) 
     {
     	StringBuilder sb = new StringBuilder("<html>\n\t<head>\n\t\t<title>e425Match.com SignIn Error</title>\n\t</head>\n\t<body>\n");
     	
     	sb.append("\t<h2>Error Processing Your Request! See Below for Details.</h2>\n");    
     	sb.append("\t<p>" + specificErrorMsg +"<p>\n");	//customizable error message
     	 
-    	sb.append("\t<form name=\"ReturnTologinForm\" method=\"POST\" action=\"").append(renderingConfiguration.getFormURL()).append("\">\n");  //give user chance to login right in error screen
+    	sb.append("\t<form name=\"ReturnTologinForm\" method=\"POST\" action=\"").append(res.encodeURL(renderingConfiguration.getFormURL())).append("\">\n");  //give user chance to login right in error screen
         sb.append("\t\t<p>Enter your name: <input type=\"text\" name=\"username\" /></p>\n");
         sb.append("\t\t<p><input type=\"submit\" name=\"submit\" value=\"" +LOGIN +"\" /></p>");
         sb.append("\n\t</form>");   	
@@ -195,4 +196,4 @@ public class RenderingService {
     	return sb.toString();    	
     }    
    
-}
+} //end class RenderingService
