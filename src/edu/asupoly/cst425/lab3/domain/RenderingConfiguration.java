@@ -72,4 +72,4 @@ public class RenderingConfiguration {
     public int getCurrentQuestion() {
         return currentQuestion;
     }
-}
+} //end class RenderingConfiguration

@@ -63,4 +63,4 @@ public final class User implements Comparable<User>, Serializable {
     public int compareTo(User other) {
         return other.matchingAnswers - this.matchingAnswers;
     }
-}
+} //end class 

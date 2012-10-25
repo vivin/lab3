@@ -31,17 +31,18 @@ public final class SurveyResults {
 
         //If the survey result doesn't exist in the existing survey result, let's see if it exists in the completed results. If so, let's
         //copy that over to userSurveyResults and return what we got.
-        if(userSurveyResult == null) {
+        if (userSurveyResult == null) {
             synchronized (completedUserSurveyResults) {
                 userSurveyResult = completedUserSurveyResults.get(user);
             }
 
-            if(userSurveyResult != null) {
+            if (userSurveyResult != null) {
                 userSurveyResults.put(user, userSurveyResult);
             }
         }
 
         return userSurveyResult;
+
     }
 
     public void removeUserSurveyResultForUser(User user) {
@@ -57,6 +58,7 @@ public final class SurveyResults {
             File file = new File(fileName);
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+
             synchronized (completedUserSurveyResults) {
                 objectOutputStream.writeObject(completedUserSurveyResults);
             }
@@ -69,8 +71,8 @@ public final class SurveyResults {
         synchronized (fileName) {
             File file = new File(fileName);
             FileInputStream fileInputStream = new FileInputStream(file);
-	        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-
+	    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+	    // DataInputStream objectInputStream = new DataInputStream(fileInputStream);
             userSurveyResults = new ConcurrentHashMap<User, UserSurveyResult>();
 
             synchronized (completedUserSurveyResults) {
@@ -79,6 +81,10 @@ public final class SurveyResults {
 
             objectInputStream.close();
         }
+    }
+
+    public Map<User, UserSurveyResult> getCompletedUserSurveyResults() {
+        return Collections.unmodifiableMap(completedUserSurveyResults);
     }
 
     public List<User> score(User user) {
@@ -115,4 +121,4 @@ public final class SurveyResults {
 
         return scoredUsers;
     }
-}
+} //end class SurveyResults
